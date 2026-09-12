@@ -1,5 +1,3 @@
-Hash of data verified.
-
 Leaving...
 Hard resetting via RTS pin...
 --- forcing DTR inactive
@@ -33,5 +31,68 @@ Status: VT connected=yes, TC connected=no, task active=no, DDOP objects=22
 TC status: connected=yes, task_active=yes
 Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
 [AgIsoStack 0] [TC]: New change threshold trigger. Element: 0 DDI: 141 on change by at least: 1
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 251
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 28
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 251
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 28
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 251
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 28
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 251
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 28
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 251
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 28
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 251
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 28
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 251
+[AgIsoStack 0] [TP]: New rx broadcast message session for 0x0FBEA. Source: 28
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 28
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0FBEA from 251
 Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
 Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
