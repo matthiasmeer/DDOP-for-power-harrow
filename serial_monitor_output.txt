@@ -1,0 +1,37 @@
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+--- forcing DTR inactive
+--- forcing RTS inactive
+--- Terminal on COM4 | 115200 8-N-1
+--- Available filters and text transformations: debug, default, direct, esp32_exception_decoder, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+I (116) esp_image: segment 1: paddr=0002b2c8 vaddr=3fc92e00 size[AgIsoStack 0] [TP]: New rx session for 0x0E600. Source: 38, destination: 128
+[AgIsoStack 1] [VT]: VT Server has a matching label for VTPOOL . It will be loaded and upload will be skipped.
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed rx session for 0x0E600 from 38
+[AgIsoStack 1] [VT]: Loaded object pool version from VT non-volatile memory with no errors.
+VT connected, pool assigned
+Status: VT connected=yes, TC connected=no, task active=no, DDOP objects=22
+[AgIsoStack 0] [TC]: Startup delay complete, waiting for TC server status message.
+[AgIsoStack 0] [TC]: TC Server supports version 3 with 5 booms, 255 sections, and 5 position based control channels.
+Status: VT connected=yes, TC connected=no, task active=no, DDOP objects=22
+[AgIsoStack 2] [TC]: Timeout waiting for version request from TC. This is not required, so proceeding anways.
+[AgIsoStack 0] [TC]: Using VT as the partner for language data, because the TC's version is less than 4.
+[AgIsoStack 0] [VT/TC]: Language and unit data received from control function 38 language is: de
+[AgIsoStack 0] [VT/TC]: Language and unit data received from control function 38 language is: de
+[AgIsoStack 1] [TC]: DDOP will be generated using the server's version instead of the specified version. New version: 3
+[AgIsoStack 0] [TC]: DDOP Generated, size: 610
+[AgIsoStack 0] [TC]: Server indicates there may be enough memory available.
+[AgIsoStack 0] [TP]: New tx session for 0x0CB00. Source: 128, destination: 247
+[AgIsoStack 0] [TP]: Session Closed
+[AgIsoStack 0] [TP]: Completed tx session for 0x0CB00 from 247
+[AgIsoStack 0] [TC]: DDOP upload completed with no errors.
+[AgIsoStack 1] [TC]: DDOP Activated without error.
+TC status: connected=yes, task_active=yes
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+[AgIsoStack 0] [TC]: New change threshold trigger. Element: 0 DDI: 141 on change by at least: 1
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22
+Status: VT connected=yes, TC connected=yes, task active=yes, DDOP objects=22

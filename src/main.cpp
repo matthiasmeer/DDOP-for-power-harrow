@@ -70,7 +70,7 @@ static std::shared_ptr<isobus::VirtualTerminalClientUpdateHelper> g_vtUpdateHelp
 // --- Task controller / DDOP state ---
 static std::shared_ptr<isobus::TaskControllerClient> g_tcClient;
 static LemkenZirkon12DDOP g_ddopHandler;
-static std::shared_ptr<isobus::DeviceDescriptorObjectPool> g_ddop = std::make_shared<isobus::DeviceDescriptorObjectPool>(3);
+static std::shared_ptr<isobus::DeviceDescriptorObjectPool> g_ddop = std::make_shared<isobus::DeviceDescriptorObjectPool>(4);
 static bool g_prevPtoEngaged = false;
 
 // helper constants for the rear pto speed PGN
@@ -362,14 +362,14 @@ static void init_task(void *)
 		       static_cast<unsigned>(serializedDDOP.size()));
 
 		g_tcClient->configure(g_ddop,
-		                       /* maxNumberBoomsSupported = */ 1,
-		                       /* maxNumberSectionsSupported = */ 1,
-		                       /* maxNumberChannelsSupportedForPositionBasedControl = */ 0,
-		                       /* reportToTCSupportsDocumentation = */ false,
-		                       /* reportToTCSupportsTCGEOWithoutPositionBasedControl = */ false,
-		                       /* reportToTCSupportsTCGEOWithPositionBasedControl = */ false,
-		                       /* reportToTCSupportsPeerControlAssignment = */ false,
-		                       /* reportToTCSupportsImplementSectionControl = */ true);
+								/* maxNumberBoomsSupported = */ 1,
+								/* maxNumberSectionsSupported = */ 1,
+								/* maxNumberChannelsSupportedForPositionBasedControl = */ 0,
+								/* reportToTCSupportsDocumentation = */ true,
+								/* reportToTCSupportsTCGEOWithoutPositionBasedControl = */ true,
+								/* reportToTCSupportsTCGEOWithPositionBasedControl = */ false,
+								/* reportToTCSupportsPeerControlAssignment = */ false,
+								/* reportToTCSupportsImplementSectionControl = */ false);
 
 		g_tcClient->add_default_process_data_requested_callback(LemkenZirkon12DDOP::default_process_data_request_callback, &g_ddopHandler);
 		g_tcClient->add_request_value_callback(LemkenZirkon12DDOP::request_value_command_callback, &g_ddopHandler);

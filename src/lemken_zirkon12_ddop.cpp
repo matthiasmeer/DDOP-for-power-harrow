@@ -6,7 +6,7 @@
 
 #include <array>
 
-static std::string VERSION_STRING = "LZ12v11";
+static std::string VERSION_STRING = "LZ12v12";
 
 void LemkenZirkon12DDOP::set_pto_engaged(bool engaged)
 {
