@@ -14,4 +14,4 @@ I have also looked at the seeder implementation/example and tried to adapt the D
 
 **What I am unsure about**
 
-I generated a DDOP-iop File , loaded it into the AgIsoStack DDOPGenerator but no error was shown. I would appreciate some guidance on the recommended/correct DDOP structure for this type of implement. I tested the Code on a LACOS LC ONE ISOBUS Terminal, the Terminal doesnt recognize a ISOBUS implement, the UT shows up without problems and i can control my relais via the ISOBUS Terminal.
+I tried using the tine revolutions per square meter as process data, but its not working. The Terminal in the Tractor shwos, that the implement is working when the PTO is spinning, yet no colour gradient or something esle is shwon, indicating that the process data reaches its destination.
