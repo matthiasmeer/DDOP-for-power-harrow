@@ -12,6 +12,12 @@
 static constexpr std::int32_t IMPLEMENT_WIDTH_MM = 3000; // 3 m power harrow, single section
 static constexpr std::uint8_t NUMBER_OF_SECTIONS = 1;
 
+// DDI 12 = "Actual Count Per Area Application Rate" per isobus.net (unit /m2, bit
+// resolution 0.001). Not in the stack's curated DataDescriptionIndex enum, so it's
+// defined here as a raw constant - check your header version for a symbolic name
+// before relying on this literal long-term.
+static constexpr std::uint16_t DDI_ACTUAL_COUNT_PER_AREA = 12;
+
 // Object IDs used within the DDOP. Values just need to be unique within the pool;
 // using an incrementing enum (like the AgIsoStack seeder example) keeps them readable.
 enum class ImplementDDOPObjectIDs : std::uint16_t
@@ -26,12 +32,13 @@ enum class ImplementDDOPObjectIDs : std::uint16_t
 	ConnectorYOffset,
 	ConnectorType,
 
-	MainImplement,
+	MainImplement, // The harrow "boom"/function element (1 rigid frame, 1 section)
 	ImplementXOffset,
 	ImplementYOffset,
 	ImplementZOffset,
 	ActualWorkingWidth,
 	SetpointWorkState,
+	TineCountPerArea, // DDI 12 - tine rotations per m^2 of ground covered
 
 	Section1,
 	Section1XOffset,
@@ -41,7 +48,8 @@ enum class ImplementDDOPObjectIDs : std::uint16_t
 	Section1SetpointWorkState,
 
 	ShortWidthPresentation,
-	LongWidthPresentation
+	LongWidthPresentation,
+	CountPerAreaPresentation
 };
 
 // Element numbers as referenced by the TC client callbacks (must match add_device_element order)
@@ -65,6 +73,12 @@ public:
 
 	bool get_setpoint_work_state() const;
 
+	// Called by the application with the latest tine count-per-area reading.
+	// Value is scaled by 1000 to match DDI 12's official bit resolution of 0.001/m^2,
+	// e.g. 12.345 tines/m^2 -> pass 12345.
+	void set_tine_count_per_area(std::int32_t scaledValue);
+	std::int32_t get_tine_count_per_area() const;
+
 	// TC client callbacks
 	static bool default_process_data_request_callback(std::uint16_t elementNumber,
 	                                                    std::uint16_t DDI,
@@ -84,6 +98,7 @@ public:
 private:
 	bool ptoEngaged = false;
 	bool setpointWorkState = false;
+	std::int32_t tineCountPerArea = 0;
 };
 
 #endif // LEMKEN_ZIRKON12_DDOP_HPP

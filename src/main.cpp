@@ -78,6 +78,7 @@ static constexpr std::uint16_t PTO_SPEED_NOT_AVAILABLE = 0xFFFF;
 static constexpr std::uint16_t PTO_SPEED_ERROR_INDICATOR = 0xFE00;
 static constexpr TickType_t PTO_REQUEST_INTERVAL = pdMS_TO_TICKS(1000);
 static std::uint32_t g_lastPtoRpm = std::numeric_limits<std::uint32_t>::max();
+static std::uint16_t n_tines_per_m = 8; // 4 rotors on 1 m width each rotor has 2 tines
 
 // Below what RPM the PTO is considered "not turning" for work-state purposes.
 // Tune this if the shaft idles/coasts a bit above zero when disengaged.
@@ -108,6 +109,7 @@ static void set_relay(uint16_t id, bool on)
 			return;
 		}
 	}
+	printf("Relay %u not found\n", id);
 }
 
 /*
@@ -160,6 +162,8 @@ void update_pto_engagement_state(std::uint32_t rpm)
 	{
 		g_tcClient->on_value_changed_trigger(static_cast<std::uint16_t>(ImplementDDOPElementNumbers::DeviceElement),
 		                                      static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkState));
+		g_tcClient->on_value_changed_trigger(static_cast<std::uint16_t>(ImplementDDOPElementNumbers::SectionElement),
+		                                      static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkState));
 		g_prevPtoEngaged = engaged;
 	}
 }
@@ -185,12 +189,18 @@ void calc_tineRPM_per_meter()
 	{
 		//micro_ros_publish_tine_rpm_per_meter(0.0f);
 		g_vtUpdateHelper->set_numeric_value(NV_tine_rpm_per_m_21006, 0);
+		if (g_ddopHandler.get_tine_count_per_area() != 0)
+		{
+			g_ddopHandler.set_tine_count_per_area(0);
+		}
 		return;
 	}
 
 	// Calculate the tine RPM per meter only after validating the denominator.
-	uint32_t tine_rpm_per_meter_scaled = static_cast<uint32_t>((tine_rev_per_second / machine_speed_meter_per_second) * 10.0f);
-	//micro_ros_publish_tine_rpm_per_meter(static_cast<float>(tine_rpm_per_meter_scaled) * 0.1f);
+	float tine_rev_per_m_square = (tine_rev_per_second / machine_speed_meter_per_second) * n_tines_per_m;
+
+	// Update the VT with the new value, scaled by 10 for one decimal place.
+	std::uint32_t tine_rpm_per_meter_scaled = static_cast<std::uint32_t>(tine_rev_per_m_square * 10.0f + 0.5f); // Scale by 10 for 1 decimal place and round
 	g_vtUpdateHelper->set_numeric_value(NV_tine_rpm_per_m_21006, tine_rpm_per_meter_scaled);
 }
 
@@ -295,12 +305,48 @@ void handle_gnss_speed_message(const isobus::CANMessage &message, void *)
 	}
 }
 
+void handle_rear_hitch_status_message(const isobus::CANMessage &message, void *)
+{
+	if (message.get_data_length() < 1)
+	{
+		return;
+	}
+
+	std::uint8_t raw_position = message.get_data()[0];
+
+	// 0xFB-0xFE = error indicators, 0xFF = not available (J1939 8-bit convention)
+	if (raw_position > 250)
+	{
+		return;
+	}
+
+	// Scale 0.4 %/bit -> percentage, stored *10 for one decimal place if you
+	// later want to feed this into a VT presentation object scaled at 0.1,
+	// matching the pattern used for NV_speed elsewhere in this file.
+	float hitch_position_percent = static_cast<float>(raw_position) * 0.4f;
+
+	//micro_ros_publish_hitch_position(hitch_position_percent);
+
+	// Optional: byte 2 (index 1) also carries limit status (bits 4-6) and
+	// in-work indication (bits 7-8), if you want those later:
+	// if (message.get_data_length() >= 2)
+	// {
+	//     std::uint8_t byte2 = message.get_data()[1];
+	//     std::uint8_t limitStatus = (byte2 >> 4) & 0x07;   // bits 4-6, SPN 5151
+	//     std::uint8_t inWork      = (byte2 >> 6) & 0x03;   // bits 7-8, SPN 1877
+	// }
+}
+
 /*
 * @brief Callback function to handle button events on the VT.
 * @param[in] event The virtual terminal key event.
 */
 void handle_button_event(const isobus::VirtualTerminalClient::VTKeyEvent &event)
 {
+	printf("VT button event: object=%u, key_event=%u\n",
+	       event.objectID,
+	       static_cast<unsigned>(event.keyEvent));
+
 	switch (event.objectID)
 	{
 		case btn_light:
@@ -524,6 +570,14 @@ extern "C" void app_main()
 	// Register a message callback for the GNSS speed PGN
 	isobus::CANNetworkManager::CANNetwork.add_any_control_function_parameter_group_number_callback(gnss_speed_pgn, handle_gnss_speed_message, nullptr);
 
+	//------------------------------------------------------------------
+	// Request the rear hitch position every 100 ms
+	int rear_hitch_position_pgn = 0xFE45;
+	isobus::ParameterGroupNumberRequestProtocol::request_repetition_rate(rear_hitch_position_pgn, 100, myECU, tractor_ECU);
+	// Register a message callback for the rear hitch status PGN
+	isobus::CANNetworkManager::CANNetwork.add_any_control_function_parameter_group_number_callback(rear_hitch_position_pgn, handle_rear_hitch_status_message, nullptr);
+
+
 	// Start the Micro-ROS2 transport
 	//micro_ros_start();
 
@@ -557,11 +611,11 @@ extern "C" void app_main()
 
 		if ((xTaskGetTickCount() - lastStatusPrint) >= pdMS_TO_TICKS(5000))
 		{
-			printf("Status: VT connected=%s, TC connected=%s, task active=%s, DDOP objects=%u\n",
-			       connected ? "yes" : "no",
-			       (nullptr != g_tcClient) && g_tcClient->get_is_connected() ? "yes" : "no",
-			       (nullptr != g_tcClient) && g_tcClient->get_is_task_active() ? "yes" : "no",
-			       g_ddop->size());
+			// printf("Status: VT connected=%s, TC connected=%s, task active=%s, DDOP objects=%u\n",
+			//        connected ? "yes" : "no",
+			//        (nullptr != g_tcClient) && g_tcClient->get_is_connected() ? "yes" : "no",
+			//        (nullptr != g_tcClient) && g_tcClient->get_is_task_active() ? "yes" : "no",
+			//        g_ddop->size());
 			lastStatusPrint = xTaskGetTickCount();
 		}
 

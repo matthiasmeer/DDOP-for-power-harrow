@@ -6,7 +6,7 @@
 
 #include <array>
 
-static std::string VERSION_STRING = "LZ12v12";
+static std::string VERSION_STRING = "LZ12v17";
 
 void LemkenZirkon12DDOP::set_pto_engaged(bool engaged)
 {
@@ -22,6 +22,24 @@ bool LemkenZirkon12DDOP::get_pto_engaged() const
 bool LemkenZirkon12DDOP::get_setpoint_work_state() const
 {
 	return setpointWorkState;
+}
+
+void LemkenZirkon12DDOP::set_tine_count_per_area(std::int32_t scaledValue)
+{
+	if (scaledValue > 1000000) // 1000 tines/m^2
+	{
+		scaledValue = 1000000;
+	}
+	else if (scaledValue < 0)
+	{
+		scaledValue = 0;
+	}
+	tineCountPerArea = scaledValue;
+}
+
+std::int32_t LemkenZirkon12DDOP::get_tine_count_per_area() const
+{
+	return tineCountPerArea;
 }
 
 bool LemkenZirkon12DDOP::create_ddop(std::shared_ptr<isobus::DeviceDescriptorObjectPool> poolToPopulate, isobus::NAME clientName)
@@ -89,7 +107,7 @@ bool LemkenZirkon12DDOP::create_ddop(std::shared_ptr<isobus::DeviceDescriptorObj
 													static_cast<std::uint16_t>(ImplementDDOPObjectIDs::MainDeviceElement),
 													isobus::task_controller_object::DeviceElementObject::Type::Function,
 													static_cast<std::uint16_t>(ImplementDDOPObjectIDs::MainImplement));
-	retVal &= poolToPopulate->add_device_property("Offset X", 0,
+	retVal &= poolToPopulate->add_device_property("Offset X", -500,
 													static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetX),
 													static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
 													static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ImplementXOffset));
@@ -115,6 +133,16 @@ bool LemkenZirkon12DDOP::create_ddop(std::shared_ptr<isobus::DeviceDescriptorObj
 	                                                   static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) | static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
 	                                                   static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
 	                                                   static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SetpointWorkState));
+
+	// DDI 12 - Actual Count Per Area Application Rate, used here for tine rotations
+	// per m^2 of ground covered. Include it in the default set so the TC can record
+	// and request the live value during an active task.
+	retVal &= poolToPopulate->add_device_process_data("Tine Count Per Area",
+	                                                   DDI_ACTUAL_COUNT_PER_AREA,
+	                                                   static_cast<std::uint16_t>(ImplementDDOPObjectIDs::CountPerAreaPresentation),
+	                                                   static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
+	                                                   static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
+	                                                   static_cast<std::uint16_t>(ImplementDDOPObjectIDs::TineCountPerArea));
 	elementCounter++;
 
 	// Section (1 section spanning the full 3 m width)
@@ -162,6 +190,8 @@ bool LemkenZirkon12DDOP::create_ddop(std::shared_ptr<isobus::DeviceDescriptorObj
 	// Presentations
 	retVal &= poolToPopulate->add_device_value_presentation("mm", 0, 1.0f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation));
 	retVal &= poolToPopulate->add_device_value_presentation("m", 0, 0.001f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LongWidthPresentation));
+	// Matches DDI 12's official bit resolution of 0.001/m^2: raw wire value / 1000 = real value.
+	retVal &= poolToPopulate->add_device_value_presentation("/m2", 0, 0.001f, 3, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::CountPerAreaPresentation));
 
 	if (retVal)
 	{
@@ -181,6 +211,7 @@ bool LemkenZirkon12DDOP::create_ddop(std::shared_ptr<isobus::DeviceDescriptorObj
 		implement->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ImplementZOffset));
 		implement->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualWorkingWidth));
 		implement->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SetpointWorkState));
+		implement->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::TineCountPerArea));
 	}
 
 	return retVal;
@@ -208,7 +239,16 @@ bool LemkenZirkon12DDOP::default_process_data_request_callback(std::uint16_t ele
 		          static_cast<std::uint16_t>(isobus::DataDescriptionIndex::SetpointWorkState) == DDI))
 		{
 			returnedSettings.enableChangeThresholdTrigger = true;
-			returnedSettings.changeThreshold = 1;
+			returnedSettings.changeThreshold = 1000;
+			retVal = true;
+		}
+		else if (static_cast<std::uint16_t>(ImplementDDOPElementNumbers::ImplementElement) == elementNumber &&
+		         DDI_ACTUAL_COUNT_PER_AREA == DDI)
+		{
+			// Coarser threshold than 1 raw unit (0.001/m^2) - that would trigger on
+			// essentially every sensor update. Tune to taste.
+			returnedSettings.enableChangeThresholdTrigger = true;
+			returnedSettings.changeThreshold = 100; // i.e. report on changes of >= 0.1 /m^2
 			retVal = true;
 		}
 		else if (static_cast<std::uint16_t>(ImplementDDOPElementNumbers::SectionElement) == elementNumber &&
@@ -236,21 +276,25 @@ bool LemkenZirkon12DDOP::request_value_command_callback(std::uint16_t elementNum
 		switch (DDI)
 		{
 			case static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkState):
-			{
-				// The harrow is only actually working while the PTO is engaged.
-				value = sim->get_pto_engaged() ? 1 : 0;
-			}
-			break;
-
 			case static_cast<std::uint16_t>(isobus::DataDescriptionIndex::SetpointWorkState):
 			{
-				value = sim->get_setpoint_work_state() ? 1 : 0;
+				// Fine for now since device/implement/section state are identical on
+				// this single-section implement - revisit if sections become independent.
+				value = (DDI == static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkState))
+							? (sim->get_pto_engaged() ? 1 : 0)
+							: (sim->get_setpoint_work_state() ? 1 : 0);
 			}
 			break;
 
 			case static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkingWidth):
 			{
 				value = IMPLEMENT_WIDTH_MM;
+			}
+			break;
+
+			case DDI_ACTUAL_COUNT_PER_AREA:
+			{
+				value = sim->get_tine_count_per_area();
 			}
 			break;
 
