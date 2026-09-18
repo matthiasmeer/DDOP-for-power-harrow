@@ -202,6 +202,14 @@ void calc_tineRPM_per_meter()
 	// Update the VT with the new value, scaled by 10 for one decimal place.
 	std::uint32_t tine_rpm_per_meter_scaled = static_cast<std::uint32_t>(tine_rev_per_m_square * 10.0f + 0.5f); // Scale by 10 for 1 decimal place and round
 	g_vtUpdateHelper->set_numeric_value(NV_tine_rpm_per_m_21006, tine_rpm_per_meter_scaled);
+
+	// Publish to ROS
+	//micro_ros_publish_tine_rpm_per_meter(static_cast<float>(tine_rev_per_m_square));
+
+	// Store the current value for the TC request callback. The TC client's
+	// configured change-threshold trigger sends it at the requested interval.
+	std::int32_t tine_rpm_per_meter_ddop_scaled = static_cast<std::int32_t>(tine_rev_per_m_square * 1000.0f + 0.5f); // Scale by 1000 for 3 decimal places and round
+	g_ddopHandler.set_tine_count_per_area(tine_rpm_per_meter_ddop_scaled);
 }
 
 /*
