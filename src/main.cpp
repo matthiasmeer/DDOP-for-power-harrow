@@ -468,8 +468,9 @@ extern "C" void app_main()
 	// Agriculture & Forestry
 	myNAME.set_industry_group(2);
 
-	// Secondary Tillage
-	myNAME.set_device_class(3);
+	// 3 = Secondary Tillage
+	// 4 = PlanterSeeder 
+	myNAME.set_device_class(4);
 
 	// Secondary Tillage Machine Control
 	myNAME.set_function_code(132);
